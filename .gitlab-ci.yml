@@ -1,5 +1,54 @@
-#Build step
-build:
-    script:
-        - echo "First step"
-        - echo "Second step"
+stages:
+  - validate
+  - preprocess
+  - train
+  - evaluate
+  - forecast
+
+image: python:3.11
+
+before_script:
+  - python --version
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+
+validate:
+  stage: validate
+  script:
+    - python -m py_compile src/preprocess.py
+    - python -m py_compile src/train.py
+    - python -m py_compile src/evaluate.py
+    - python -m py_compile src/forecast.py
+    - echo "Code validation successful"
+
+preprocess:
+  stage: preprocess
+  script:
+    - python src/preprocess.py
+  artifacts:
+    paths:
+      - data/processed/
+
+train:
+  stage: train
+  script:
+    - python src/train.py
+  artifacts:
+    paths:
+      - models/
+
+evaluate:
+  stage: evaluate
+  script:
+    - python src/evaluate.py
+  artifacts:
+    paths:
+      - results/
+
+forecast:
+  stage: forecast
+  script:
+    - python src/forecast.py
+  artifacts:
+    paths:
+      - results/
